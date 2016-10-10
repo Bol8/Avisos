@@ -1,5 +1,6 @@
 package com.app.oscar.avisos;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -14,12 +15,77 @@ import android.widget.ListView;
 
 public class AvisosActivity extends AppCompatActivity {
     private ListView mListView;
+    private AvisosDBAdapter mDBAdapter;
+    private AvisosSimpleCursorAdapter mCursorAdapter;
+
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_avisos);
 
         mListView = (ListView) findViewById(R.id.avisos_list_view);
+        mListView.setDivider(null);
+
+        mDBAdapter = new AvisosDBAdapter(this);
+        mDBAdapter.open();
+
+        if(savedInstanceState == null){
+            //limpiar todos los datos
+            mDBAdapter.deleteAllReminders();
+
+            //Add algunos datos
+            mDBAdapter.createReminder("Visitar médico",true);
+            mDBAdapter.createReminder("Enviar regalos",false);
+            mDBAdapter.createReminder("Hacer compra semanal",false);
+
+        }
+
+
+        Cursor cursor = mDBAdapter.fetchAllReminders();
+
+        //desde las columnas definidas en la base de datos
+        String[] from = new String[]{
+                AvisosDBAdapter.COL_CONTENT
+        };
+
+        //a la id de views en le layout
+        int[] to = new int[]{
+                R.id.row_text
+        };
+
+        mCursorAdapter = new AvisosSimpleCursorAdapter(
+          //context
+          AvisosActivity.this,
+          //el layout de la fila
+          R.layout.avisos_row,
+          //cursor
+          cursor,
+          //desde columnas definidas en la base de datos
+          from,
+          //a las ids de views en el layout
+          to,
+          //flag - no usado
+          0  );
+
+
+        //el cursorAdapter (controller) está ahora actualizado la listView (view)
+        //con datos desde la base de datos (modelo)
+        mListView.setAdapter(mCursorAdapter);
+
+    }
+
+
+
+
+   /* protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_avisos);
+
+        mListView = (ListView) findViewById(R.id.avisos_list_view);
+
+        //El arrayAdapter es el controller en nuestra
+        //relación model-view-controller. (controller)
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
                 this, //context
                 R.layout.avisos_row, //layout (view)
@@ -27,7 +93,7 @@ public class AvisosActivity extends AppCompatActivity {
                 new String[]{"first record","second record","third record"}  );
 
         mListView.setAdapter(arrayAdapter);
-    }
+    }*/
 
 
    /*  @Override
