@@ -24,10 +24,11 @@ public class AvisosActivity extends AppCompatActivity {
                 this, //context
                 R.layout.avisos_row, //layout (view)
                 R.id.row_text, //row (view)
-                new String[]{"first record,second record,third record,fourth record,five record"}  );
+                new String[]{"first record","second record","third record"}  );
 
         mListView.setAdapter(arrayAdapter);
     }
+
 
    /*  @Override
      protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +47,7 @@ public class AvisosActivity extends AppCompatActivity {
          });
      }*/
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -55,6 +57,7 @@ public class AvisosActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
        switch (item.getItemId()){
 
            case R.id.action_nuevo:
