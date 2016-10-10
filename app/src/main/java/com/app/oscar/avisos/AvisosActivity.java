@@ -1,17 +1,21 @@
 package com.app.oscar.avisos;
 
+import android.app.Dialog;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class AvisosActivity extends AppCompatActivity {
     private ListView mListView;
@@ -72,6 +76,53 @@ public class AvisosActivity extends AppCompatActivity {
         //el cursorAdapter (controller) está ahora actualizado la listView (view)
         //con datos desde la base de datos (modelo)
         mListView.setAdapter(mCursorAdapter);
+
+
+        //cuando pulsamos en un item individual en la listview
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(AvisosActivity.this);
+
+                ListView modelListView = new ListView(AvisosActivity.this);
+                String[] modes = new String[]{"Editar Aviso","Borrar Aviso"};
+
+                ArrayAdapter<String> modeAdapter = new ArrayAdapter<String>(AvisosActivity.this,
+                        android.R.layout.simple_list_item_1, android.R.id.text1, modes);
+
+                modelListView.setAdapter(modeAdapter);
+                builder.setView(modelListView);
+
+                final Dialog dialog = builder.create();
+                dialog.show();
+
+                modelListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        //editar aviso
+                        if(position == 0){
+                            Toast.makeText(AvisosActivity.this, "editar " + position,
+                                    Toast.LENGTH_SHORT).show();
+                        }else{
+                            Toast.makeText(AvisosActivity.this, "borrar " + position,
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                        dialog.dismiss();
+                    }
+                });
+            }
+        });
+
+
+       /*  @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+             Toast.makeText(AvisosActivity.this, "pulsado " + position,
+                            Toast.LENGTH_LONG).show();
+            }
+
+        });*/
 
     }
 
