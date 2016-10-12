@@ -18,6 +18,8 @@ public class Aviso {
     }
 
 
+
+
     public int getId() {
         return mId;
     }

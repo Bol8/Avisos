@@ -5,6 +5,16 @@
     <color name="colorAccent">#FF4081</color>
     <color name="azul_claro">#8eacf2</color>
     <color name="rosa">#FF4081</color>
-    <color name="azul_oscuro">#447BD4</color>
+    <color name="azul_oscuro">#3e5d8f</color>
     <color name="naranja">#ec8b31</color>
+    <color name="blanco">#ffffff</color>
+    <color name="gris_claro">#bababa</color>
+    <color name="negro">#000000</color>
+    <color name="azul_neutro">#ff1118ff</color>
+    <color name="gris_oscuro">#181818</color>
+    <color name="verde">#003300</color>
+    <color name="lila">#4B2A82</color>
+    <color name="amarillo">#A69300</color>
+    <color name="amarillo_apagado">#BFAF30</color>
+
 </resources>

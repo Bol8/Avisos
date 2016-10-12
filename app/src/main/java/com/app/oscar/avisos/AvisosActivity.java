@@ -16,10 +16,16 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
@@ -129,12 +135,7 @@ public class AvisosActivity extends AppCompatActivity {
                 @Override
                 public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) { }
 
-
-
             });
-
-
-
 
         }
 
@@ -143,7 +144,7 @@ public class AvisosActivity extends AppCompatActivity {
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view,final int masterListPosition, long id) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(AvisosActivity.this);
 
                 ListView modelListView = new ListView(AvisosActivity.this);
@@ -164,11 +165,18 @@ public class AvisosActivity extends AppCompatActivity {
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         //editar aviso
                         if(position == 0){
-                            Toast.makeText(AvisosActivity.this, "editar " + position,
-                                    Toast.LENGTH_SHORT).show();
+                            int nId = getIdFromPosition(masterListPosition);
+                            Aviso aviso = mDBAdapter.fetchReminderById(nId);
+                            fireCustomDialog(aviso);
+
+                          /*  Toast.makeText(AvisosActivity.this, "editar " + position,
+                                    Toast.LENGTH_SHORT).show();*/
                         }else{
-                            Toast.makeText(AvisosActivity.this, "borrar " + position,
-                                    Toast.LENGTH_SHORT).show();
+
+                            mDBAdapter.deleteReminderById(getIdFromPosition(masterListPosition));
+                            mCursorAdapter.changeCursor(mDBAdapter.fetchAllReminders());
+                           /* Toast.makeText(AvisosActivity.this, "borrar " + position,
+                                    Toast.LENGTH_SHORT).show();*/
                         }
                         dialog.dismiss();
                     }
@@ -176,57 +184,16 @@ public class AvisosActivity extends AppCompatActivity {
             }
         });
 
-
-       /*  @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-             Toast.makeText(AvisosActivity.this, "pulsado " + position,
-                            Toast.LENGTH_LONG).show();
-            }
-
-        });*/
-
     }
 
 
     private int getIdFromPosition(int nC){
+        Log.d(getLocalClassName(),"position " + nC);
         return (int) mCursorAdapter.getItemId(nC);
     }
 
 
-   /* protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_avisos);
 
-        mListView = (ListView) findViewById(R.id.avisos_list_view);
-
-        //El arrayAdapter es el controller en nuestra
-        //relación model-view-controller. (controller)
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                this, //context
-                R.layout.avisos_row, //layout (view)
-                R.id.row_text, //row (view)
-                new String[]{"first record","second record","third record"}  );
-
-        mListView.setAdapter(arrayAdapter);
-    }*/
-
-
-   /*  @Override
-     protected void onCreate(Bundle savedInstanceState) {
-         super.onCreate(savedInstanceState);
-         setContentView(R.layout.activity_avisos);
-         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-         setSupportActionBar(toolbar);
-
-         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-         fab.setOnClickListener(new View.OnClickListener() {
-             @Override
-             public void onClick(View view) {
-                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                         .setAction("Action", null).show();
-             }
-         });
-     }*/
 
 
     @Override
@@ -236,6 +203,53 @@ public class AvisosActivity extends AppCompatActivity {
         return true;
     }
 
+    private void fireCustomDialog(final Aviso aviso){
+        //custom dialog
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_custom);
+
+        TextView titleTextView = (TextView) dialog.findViewById(R.id.custom_title);
+        final EditText editCustom = (EditText) dialog.findViewById(R.id.custom_edit_reminder);
+        Button commitButton = (Button) dialog.findViewById(R.id.custom_button_commit);
+        final CheckBox checkBox = (CheckBox) dialog.findViewById(R.id.custom_check_box);
+        LinearLayout rootLayout = (LinearLayout) dialog.findViewById(R.id.custom_root_layout);
+        final boolean isEditOperation = (aviso != null);
+
+        if(isEditOperation){
+            titleTextView.setText("Editar Aviso");
+            checkBox.setChecked(aviso.getImportant() == 1);
+            editCustom.setText(aviso.getContent());
+            rootLayout.setBackgroundColor(getResources().getColor(R.color.amarillo_apagado));
+        }
+
+        commitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String reminderText = editCustom.getText().toString();
+                if(isEditOperation){
+                    Aviso reminderEdited = new Aviso(aviso.getId(),reminderText,checkBox.isChecked() ? 1 : 0);
+                    mDBAdapter.updateReminder(reminderEdited);
+                }else{
+                    mDBAdapter.createReminder(reminderText,checkBox.isChecked());
+                }
+
+                mCursorAdapter.changeCursor(mDBAdapter.fetchAllReminders());
+                dialog.dismiss();
+            }
+        });
+
+        Button buttonCancel = (Button) dialog.findViewById(R.id.custom_button_cancel);
+        buttonCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -243,7 +257,8 @@ public class AvisosActivity extends AppCompatActivity {
 
            case R.id.action_nuevo:
                //crear nuevo aviso
-               Log.d(getLocalClassName(),"crear nuevo aviso");
+              // Log.d(getLocalClassName(),"crear nuevo aviso");
+               fireCustomDialog(null);
                return true;
 
            case R.id.action_salir:
